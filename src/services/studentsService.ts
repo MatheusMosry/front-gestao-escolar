@@ -26,7 +26,6 @@ export const studentsService = {
         params: { role: 'student' } 
       });
       
-      // Verifica se veio paginado ({ data: [], total: ... }) ou array direto
       const rawUsers = response.data.data || response.data; 
 
       if (!Array.isArray(rawUsers)) {
@@ -35,28 +34,24 @@ export const studentsService = {
       }
 
       return rawUsers.map((user: any) => {
-        // Lógica de segurança para extrair matrícula e turma
-        let enrollmentValue = 'Pendente';
-        let className = 'Sem Turma';
-
-        // Tenta extrair matrícula (pode ser string ou objeto dependendo do backend)
-        // Prioriza a coluna 'matricula' se existir (conforme seu backend), senão 'enrollment'
-        const rawEnrollment = user.matricula || user.enrollment;
-
-        if (rawEnrollment) {
-            if (typeof rawEnrollment === 'string') {
-                enrollmentValue = rawEnrollment;
-            } else if (typeof rawEnrollment === 'object') {
-                enrollmentValue = rawEnrollment.id || 'Pendente';
-                // Tenta pegar a turma dentro do objeto de relacionamento
-                if (rawEnrollment.class && rawEnrollment.class.name) {
-                    className = rawEnrollment.class.name;
-                }
-            }
+        // 1. Extração da Matrícula (Número visual)
+        // Prioriza a coluna 'matricula' (string) da tabela users
+        let enrollmentValue = user.matricula || user.enrollment || 'Pendente';
+        
+        // Se por acaso 'enrollment' for o objeto de relação e não a string, pegamos o ID dele
+        if (typeof enrollmentValue === 'object' && enrollmentValue !== null) {
+            enrollmentValue = enrollmentValue.id || 'Pendente';
         }
 
-        // Se a turma não veio pelo enrollment, tenta ver se veio direto
-        if (className === 'Sem Turma' && user.class) {
+        // 2. Extração da Turma (Nome visual)
+        let className = 'Sem Turma';
+
+        // Verifica se existe o relacionamento 'enrollment' (objeto) e se tem 'class' dentro
+        if (user.enrollment && typeof user.enrollment === 'object' && user.enrollment.class) {
+            className = user.enrollment.class.name || 'Sem Turma';
+        }
+        // Fallback: Tenta ver se a turma veio direto no objeto user (alguns backends fazem isso)
+        else if (user.class) {
              className = typeof user.class === 'string' ? user.class : (user.class.name || 'Sem Turma');
         }
 
@@ -67,9 +62,10 @@ export const studentsService = {
           phone: user.phone || '',
           status: user.status || 'active',
           role: user.role || 'student',
-          enrollment: enrollmentValue,
-          class: className,
-          // Garante que grades seja sempre um array, mesmo que venha null
+          
+          enrollment: enrollmentValue, // Campo visual da matrícula
+          class: className,            // Campo visual da turma
+          
           grades: Array.isArray(user.grades) ? user.grades : [] 
         };
       });
@@ -80,8 +76,6 @@ export const studentsService = {
   },
   
   create: async (data: CreateStudentDto) => {
-      // Backend exige senha. Usamos uma padrão se não fornecida.
-      // Mapeia 'enrollment' do front para 'matricula' do back se necessário
       const payload = { 
         ...data, 
         matricula: data.enrollment, // Envia como matricula para o back

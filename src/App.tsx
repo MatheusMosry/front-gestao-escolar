@@ -9,6 +9,7 @@ import { Students } from './components/Students';
 import { Classes } from './components/Classes'; // Ajuste conforme sua estrutura
 import { Grades } from './components/Grades';     // Ajuste conforme sua estrutura
 import { Announcements } from './components/Announcements'; // Ajuste conforme sua estrutura
+import { Teachers } from './components/Teachers'; 
 
 // Componente de Proteção de Rota
 function PrivateRoutes() {
@@ -36,6 +37,7 @@ export default function App() {
             <Route path="/classes" element={<Classes />} />
             <Route path="/grades" element={<Grades />} />
             <Route path="/announcements" element={<Announcements />} />
+            <Route path="/teachers" element={<Teachers />} />
           </Route>
 
           {/* Redirecionamento padrão */}
