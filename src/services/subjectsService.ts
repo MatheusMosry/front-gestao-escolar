@@ -1,6 +1,14 @@
 import { api } from '../lib/api';
 import { Subject, PaginatedResponse, FilterParams } from '../types';
 
+export interface Subject {
+  id: string;
+  name: string;
+  code: string;
+  description?: string;
+  credits: number;
+}
+
 export const subjectsService = {
   getSubjects: async (params: FilterParams = {}) => {
     const response = await api.get<PaginatedResponse<Subject>>('/subjects', { params });

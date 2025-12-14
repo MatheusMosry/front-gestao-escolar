@@ -1,6 +1,21 @@
 import { api } from '../lib/api';
 import { User, CreateUserRequest, UpdateUserRequest, PaginatedResponse, FilterParams } from '../types';
 
+
+export interface CreateUserRequest {
+  name: string;
+  email: string;
+  password: string;
+  role: 'admin' | 'teacher' | 'student' | 'parent';
+}
+
+export interface UpdateUserRequest {
+  name?: string;
+  email?: string;
+  role?: 'admin' | 'teacher' | 'student' | 'parent';
+  status?: 'active' | 'inactive' | 'pending';
+}
+
 export const usersService = {
   getUsers: async (params: FilterParams = {}) => {
     const response = await api.get<PaginatedResponse<User>>('/users', { params });
